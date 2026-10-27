@@ -31,9 +31,44 @@ Application {
 
     onBufferedVolumeChanged: mprisController.volume = bufferedVolume
 
+    // Where the track is (the phone tells asteroid-btsyncd at play, pause and
+    // seek): run on here while it plays, refreshed once a second while shown
+    property double basePosition: 0
+    property double baseTime: 0
+    property double shownPosition: 0
+    readonly property double duration: mprisController.metaData.duration ? mprisController.metaData.duration : 0
+    // The phone's player, when the phone said which (asteroid-btsyncd's own
+    // name otherwise)
+    readonly property string playerName: mprisController.identity && mprisController.identity !== "Asteroid BLE Sync Daemon"
+                                         ? mprisController.identity : ""
+
+    function syncPosition() {
+        basePosition = Math.max(0, mprisController.position)
+        baseTime = Date.now()
+        updatePosition()
+    }
+
+    function updatePosition() {
+        var p = basePosition
+        if (isPlaying)
+            p += (Date.now() - baseTime) * (mprisController.rate > 0 ? mprisController.rate : 1)
+        shownPosition = duration > 0 ? Math.min(p, duration) : p
+    }
+
+    onIsPlayingChanged: syncPosition()
+    Component.onCompleted: syncPosition()
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: app.isPlaying && app.duration > 0 && Qt.application.state === Qt.ApplicationActive
+        onTriggered: app.updatePosition()
+    }
+
     MprisController {
         id: mprisController
         onVolumeChanged: bufferedVolumeTimer.restart()
+        onPositionChanged: app.syncPosition()
     }
 
     BluetoothStatus { id: btStatus }
@@ -55,6 +90,30 @@ Application {
     Item {
         anchors.fill: parent
         visible: btStatus.connected
+
+        // The crown changes the phone's volume, a step per notch
+        WheelHandler {
+            enabled: btStatus.connected
+            onWheel: function (event) {
+                if (event.angleDelta.y === 0)
+                    return
+                var step = event.angleDelta.y > 0 ? 0.05 : -0.05
+                bufferedVolume = Math.max(0, Math.min(1, bufferedVolume + step))
+            }
+        }
+
+        Label {
+            id: playerLabel
+            anchors.bottom: songLabel.top
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Dims.w(40)
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+            font.pixelSize: Dims.l(4)
+            opacity: 0.7
+            visible: app.playerName !== ""
+            text: app.playerName
+        }
 
         Image {
             id: coverArt
@@ -97,6 +156,30 @@ Application {
             width: DeviceSpecs.hasRoundScreen ? Dims.w(70) : Dims.w(80)
 
             text: (mprisController.metaData.contributingArtist || []).join(", ")
+        }
+
+        // How far the track is
+        Rectangle {
+            id: progressTrack
+            visible: app.duration > 0
+            anchors.top: artistLabel.bottom
+            anchors.topMargin: Dims.h(1)
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Dims.w(44)
+            height: Dims.h(1)
+            radius: height / 2
+            color: "white"
+            opacity: 0.3
+        }
+
+        Rectangle {
+            visible: progressTrack.visible
+            anchors.left: progressTrack.left
+            anchors.verticalCenter: progressTrack.verticalCenter
+            height: progressTrack.height
+            radius: height / 2
+            width: progressTrack.width * Math.max(0, Math.min(1, app.shownPosition / Math.max(1, app.duration)))
+            color: "white"
         }
 
         IconButton {
