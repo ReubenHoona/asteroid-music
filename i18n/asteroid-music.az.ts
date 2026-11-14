@@ -10,8 +10,8 @@
     </message>
     <message id="id-app-launcher-name">
         <location filename="asteroid-music.desktop.h" line="6"/>
-        <source>Music</source>
-        <translation>Musiqi</translation>
+        <source>Media Controls</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
