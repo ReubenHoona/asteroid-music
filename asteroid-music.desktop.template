@@ -3,5 +3,6 @@ Type=Application
 Categories=Applications;
 Exec=asteroid-music
 Icon=ios-musical-notes-outline
-X-Asteroid-Center-Color=#2577B3
+X-Asteroid-Center-Color=#FFFFFF
+X-Eos-Glyph-Color=#3186FF
 X-Asteroid-Outer-Color=#000619
