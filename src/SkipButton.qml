@@ -9,14 +9,15 @@ import "media.js" as Media
 
 // The previous / next pill of the Media Controls button group
 // (media-controls-04, MS/fl.java:2691-2805, 4004-4180): primaryDim fill, a
-// 32 dp skip arrow in onPrimary, a short skip animation on tap (500 ms: the
+// 32 dp skip arrow in onPrimary, outlined (Material Symbols FILL 0) as in the
+// Wear OS 6 look (S33; CP3A filled), a short skip animation on tap (500 ms: the
 // arrow runs ahead and comes back). Disabled: onSurface 16 %, icon 38 %.
 // `direction` is -1 for previous, +1 for next.
 Item {
     id: root
 
     property int direction: 1
-    property string iconName: direction < 0 ? "ms-skip_previous-fill" : "ms-skip_next-fill"
+    property string iconName: direction < 0 ? "ms-skip_previous" : "ms-skip_next"
     property string name
     readonly property alias pressed: area.pressed
     signal clicked()

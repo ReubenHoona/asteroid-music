@@ -11,13 +11,14 @@ import "media.js" as Media
 // The Media Controls play / pause button (media-controls-03, -05; Horologist
 // M3 AnimatedPlayPauseButton, MS/fl.java:4470-4925).
 //
-// A 64 dp slot with a 60 dp shape in the primary colour: a 10 point rounded
-// scallop (outer 30 dp, inner 24 dp, corners 12 dp) turning anticlockwise by
+// A 64 dp slot with a 64 dp shape (the Wear OS 6 look, S33; CP3A 60 dp) in
+// the primary colour: a 10 point rounded scallop (outer 32 dp, inner 25.6 dp,
+// corners 12 dp) turning anticlockwise by
 // 36 deg per 3 s (linear, restarting) while playing, a circle while paused,
 // morphing between them. A button of the group being pressed morphs it toward
 // a pill 12 dp wider (itself) or narrower (a neighbour). The glyph morphs
 // between two bars and a triangle in 170 ms. The track progress is a 4 dp ring
-// on the outline (turning with the shape), the filled shape shrinks to 48 dp
+// on the outline (turning with the shape), the filled shape shrinks to 51.2 dp
 // while it shows; loading shows an indeterminate circular indicator instead.
 // The turning runs only while playing, shown and `active`.
 Item {

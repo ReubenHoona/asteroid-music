@@ -31,6 +31,9 @@ Application {
     // stock's app scaffold shows the curved time (media-controls-13); it follows
     // the 12 / 24 hour setting
     showTime: true
+    // the Wear OS 6 Media Controls has its time 1 dp from the edge (digit top
+    // y 10, S33)
+    timeTextMargin: Theme.dp(1)
 
     // Is the phone linked (btsyncd's state)? The tests set it.
     property bool linkUp: btStatus.connected

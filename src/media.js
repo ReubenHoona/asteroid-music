@@ -8,9 +8,12 @@
 // Media Controls (Horologist M3 PlayerScreen on the Pixel Watch 2, 192 dp).
 // Sizes are dp: the QML files multiply with Theme.dp(). Evidence in the
 // gaps media-controls-01..09 (MS/hds.java, fl.java, gye.java, hj.java).
+// The Wear OS 6 look (N61-51, emulator screenshot S33) centres the button
+// group on the screen, grows the play shape and lowers the output pill:
+// TOP_H, BOTTOM_H, PLAY_SHAPE, BOTTOM_TOP and the shape radii.
 
 // ---- layout (media-controls-01, -02, -04, -06) ----
-var TOP_H = 68            // MS/hds.java:1291-1308
+var TOP_H = 64            // S33: group centred on y 192 (CP3A 68, MS/hds.java:1291-1308)
 var TOP_PAD_TOP = 24      // ceil(12 % of 192 dp)
 var TOP_PAD_BOTTOM = 2
 var DISPLAY_H = 38        // MS/fl.java:2213
@@ -19,18 +22,18 @@ var TITLE_H = 20
 var ARTIST_W = 144        // 75 %
 var ARTIST_H = 18
 var MID_H = 64
-var BOTTOM_H = 60
+var BOTTOM_H = 64         // the rest of the 192 dp (CP3A 60)
 var GROUP_SIDE = 14       // pill group: outer padding (MS/gyf.java:1154-1167)
 var PILL_W = 40
 var PILL_H = 48
 var PILL_GAP = 10
 var PLAY_SLOT = 64
-var PLAY_SHAPE = 60       // scallop / circle across
+var PLAY_SHAPE = 64       // scallop / circle across (S33: 128 px; CP3A 60)
 var PLAY_ICON = 32
 var SKIP_ICON = 32
 var EXPAND = 12           // a pressed button grows 12 dp (ButtonGroupLayout.kt)
 var BOTTOM_SIDE = 28      // MS/gye.java:123
-var BOTTOM_TOP = 3
+var BOTTOM_TOP = 16       // S33: output pill y 288-351 (CP3A 3)
 var OUT_PILL_W = 44       // MS/gye.java:4512
 var OUT_PILL_H = 32
 var OUT_ICON = 24
@@ -50,15 +53,15 @@ var ARTIST_IN = 90, ARTIST_OUT = 30
 
 // ---- shapes (media-controls-03; MS/auw.java:27-38) ----
 var SCALLOP_POINTS = 10   // vertices per radius
-var SCALLOP_OUTER = 30    // dp (60 px)
-var SCALLOP_INNER = 24    // dp (0.8)
+var SCALLOP_OUTER = 32    // dp (64 px): PLAY_SHAPE / 2 (CP3A 30)
+var SCALLOP_INNER = 25.6  // dp (0.8)
 var SCALLOP_ROUND = 12    // dp corner rounding
 var ROTATE_DEG = -36      // per ROTATE_MS, linear, restarting
 var ROTATE_MS = 3000
 var ICON_MORPH_MS = 170
 var RING_STROKE = 4       // dp (MS/fl.java:4636)
 var RING_GAP = 1          // dp of free path between the caps (about 2 px)
-var RING_INNER = 48       // dp across: the filled shape while the ring shows (96 px)
+var RING_INNER = 51.2     // dp across: the filled shape while the ring shows (0.8)
 var RING_SAMPLES = 120
 
 // ---- crown (media-controls-08; MS/gvo.java:11-43) ----

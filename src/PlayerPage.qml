@@ -9,11 +9,13 @@ import "media.js" as Media
 
 // The Media Controls player (Horologist M3 PlayerScreen on the Pixel Watch 2,
 // media-controls-01..06, -08, -09, -14): a Column of three boxes filling the
-// 192 dp screen, space between: the top box 68 dp (24 dp padding on top for the
+// 192 dp screen, space between: the top box 64 dp (24 dp padding on top for the
 // curved time, 2 dp below) holding the 38 dp media display (title row 128 x 20
 // dp, artist row 144 x 18 dp) aligned to its bottom, the middle box 64 dp with
 // the button group (previous pill, play / pause shape, next pill), the bottom
-// box 60 dp with the output row. On black, no mesh.
+// box 64 dp with the output row. The Wear OS 6 look (S33) centres the button
+// group on the screen (CP3A: top box 68 dp, bottom box 60 dp). On black, no
+// mesh.
 //
 // This item only draws what it is given; main.qml owns the MPRIS state.
 Item {

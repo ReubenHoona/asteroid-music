@@ -1,0 +1,3 @@
+module Amber.Mpris
+singleton Mpris 1.0 Mpris.qml
+MprisController 1.0 MprisController.qml

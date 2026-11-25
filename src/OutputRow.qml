@@ -9,7 +9,8 @@ import org.asteroid.controls
 import "media.js" as Media
 
 // The bottom row of Media Controls (media-controls-06, -14; MS/gye.java:67-342,
-// 4179-4880): two equal cells padded 28 dp left and right, 3 dp from the top,
+// 4179-4880): two equal cells padded 28 dp left and right, 16 dp from the top
+// (pill y 288, the Wear OS 6 look, S33; CP3A 3 dp),
 // a 44 x 32 dp pill in each (onSurface 24 %, disabled 16 %), icons 24 dp.
 // Left: the output device (a smartphone: the phone plays) with an 18 dp badge,
 // a 7 point soft star in primaryDim shifted 9 dp past the top end corner, with
@@ -17,7 +18,8 @@ import "media.js" as Media
 // at the maximum, down between); a tap opens the Volume screen. Right: More
 // Actions (three dots), shown only when the player has more actions; without
 // them the output pill is the only one and is centred, as stock does.
-// Nothing playing: the pill shows the output-off icon and is disabled.
+// Nothing playing: the pill shows the output-off icon (a struck phone and
+// speaker, ms-media_output_off, S33) and is disabled.
 Item {
     id: root
 
@@ -81,7 +83,7 @@ Item {
             anchors.centerIn: parent
             width: root.u * Media.OUT_ICON
             height: width
-            name: root.hasOutput ? "ms-smartphone" : "ms-phone_disabled"
+            name: root.hasOutput ? "ms-smartphone" : "ms-media_output_off"
             color: root._alpha(root.hasOutput ? 1 : Theme.alpha.disabledContent)
         }
 
