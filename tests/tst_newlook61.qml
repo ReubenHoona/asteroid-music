@@ -15,6 +15,8 @@ import "../src/media.js" as Media
 // centred on the screen, a 64 dp play disc (S33: 128 px, x and y 128-255),
 // outlined skip glyphs, the output pill at y 288-351 with the struck phone
 // and speaker glyph, 'Nothing playing' from y 72, the time digit top at y 10.
+// N61-55: the launcher icon in the emulator's colours, a #F5F0E5 disc with a
+// #1D1C15 glyph.
 //
 // Run with qmltestrunner -import tests/mocks (the Amber.Mpris double), the
 // org.asteroid.controls of qml-asteroid newlook-61 (c88dfea or later:
@@ -178,5 +180,16 @@ TestCase {
         var s = litRows(img, 40, 344, 60, 125, 100)
         near(s[0], 72, 2, "text top")
         app.destroy()
+    }
+
+    function test_5_launcherIcon() {
+        var x = new XMLHttpRequest()
+        x.open("GET", Qt.resolvedUrl("../asteroid-music.desktop.template"), false)
+        x.send()
+        var t = x.responseText
+        verify(t.indexOf("Icon=ios-musical-notes-outline\n") >= 0, "the same glyph")
+        verify(t.indexOf("X-Asteroid-Center-Color=#F5F0E5\n") >= 0, "disc #F5F0E5 (emulator; CP3A white)")
+        verify(t.indexOf("X-Eos-Glyph-Color=#1D1C15\n") >= 0, "glyph #1D1C15 (emulator; CP3A #3186FF)")
+        verify(t.indexOf("X-Eos-Own-Icon") < 0, "a glyph on a disc, not an own icon")
     }
 }
