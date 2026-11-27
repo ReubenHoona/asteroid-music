@@ -89,5 +89,17 @@
         <source>Phone</source>
         <translation>Phone</translation>
     </message>
+    <message id="id-media-up-next">
+        <source>Up Next</source>
+        <translation>Up Next</translation>
+    </message>
+    <message id="id-media-queue">
+        <source>Media Queue</source>
+        <translation>Media Queue</translation>
+    </message>
+    <message id="id-media-paused">
+        <source>Paused</source>
+        <translation>Paused</translation>
+    </message>
 </context>
 </TS>

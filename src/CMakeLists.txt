@@ -15,6 +15,9 @@ asteroid_app_qml_module(asteroid-music
 	PlayerPage.qml
 	ArtBackground.qml
 	MediaLink.qml
+	Equaliser.qml
+	MorePage.qml
+	QueuePage.qml
 )
 
 target_link_libraries(

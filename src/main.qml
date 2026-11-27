@@ -88,6 +88,7 @@ Application {
 
     MediaLink {
         id: mediaLink
+        live: app.interactive
         onArtUpdated: if (app.interactive) app.takeArt()
     }
 
@@ -130,6 +131,9 @@ Application {
     readonly property string unknownDetails: qsTrId("id-media-unknown-details")
     //% "Phone"
     readonly property string phoneText: qsTrId("id-media-phone")
+
+    // the player app's name on the phone ("" not told): the header of More Actions and the queue
+    readonly property string playerApp: Media.playerName(mprisController.identity)
 
     readonly property string titleText: shown.kind !== "media" ? "" : shown.unknown ? unknownTitle : shown.title
     readonly property string artistText: shown.kind !== "media" ? "" : shown.unknown ? unknownDetails : shown.artist
@@ -242,6 +246,9 @@ Application {
                 onNext: if (mprisController.canGoNext) mprisController.next()
                 onOutputClicked: layerStack.push(volumeComponent)
                 onVolumeRequested: function (level) { app.setVolume(level) }
+                // More Actions: the player's custom actions and Up Next (media-controls-19, -20)
+                hasMore: mediaLink.hasMore && app.shown.kind === "media"
+                onMoreClicked: layerStack.push(moreComponent)
             }
         }
     }
@@ -255,6 +262,41 @@ Application {
             connected: app.linkUp
             onVolumeRequested: function (level) { app.setVolume(level) }
         }
+    }
+
+    Component {
+        id: moreComponent
+        MorePage {
+            objectName: "morePage"
+            appName: app.playerApp
+            actions: mediaLink.actions
+            upNext: mediaLink.upNext
+            onActionClicked: function (index) { mediaLink.customAction(index) }
+            onQueueClicked: layerStack.push(queueComponent)
+        }
+    }
+
+    Component {
+        id: queueComponent
+        QueuePage {
+            objectName: "queuePage"
+            appName: app.playerApp
+            queue: mediaLink.queue
+            current: mediaLink.current
+            playing: app.isPlaying
+            active: app.interactive
+            onItemClicked: function (index) {
+                mediaLink.playQueueItem(index)
+                app.backToPlayer()
+            }
+        }
+    }
+
+    // a queue item was chosen: back to the player (stock navigates to player?page=0, MS/hg.java ad())
+    function backToPlayer() {
+        while (layerStack.layers.length > 1)
+            layerStack.pop(layerStack.currentLayer)
+        layerStack.popAnim()
     }
 
     LayerStack {

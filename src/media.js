@@ -332,3 +332,146 @@ function artSeed(c) {
     var s = String(c === undefined || c === null ? "" : c).trim()
     return /^#?[0-9a-fA-F]{6}$/.test(s) ? ("#" + s.replace("#", "")).toUpperCase() : ""
 }
+
+// ---- More Actions and the queue (media-controls-19, -20) ----
+// btsyncd's Media.Extras(): {"actions":["Shuffle",..],"queue":[{"t":TITLE,"s":SUBTITLE},..],"current":N}, the
+// player's custom actions and its queue from the item that plays (current 0; -1 when the player does not say).
+// Indexes are the phone's: action i and queue item i are run by their index, so nothing is dropped or moved.
+function parseExtras(json) {
+    var out = { actions: [], queue: [], current: -1 }
+    var o
+    try {
+        o = JSON.parse(String(json === undefined || json === null ? "" : json))
+    } catch (e) {
+        return out
+    }
+    if (!o || typeof o !== "object")
+        return out
+    var i
+    if (Array.isArray(o.actions))
+        for (i = 0; i < o.actions.length; i++)
+            out.actions.push(String(o.actions[i] === undefined || o.actions[i] === null ? "" : o.actions[i]))
+    if (Array.isArray(o.queue))
+        for (i = 0; i < o.queue.length; i++) {
+            var q = o.queue[i] || {}
+            out.queue.push({ title: String(q.t === undefined || q.t === null ? "" : q.t),
+                             subtitle: String(q.s === undefined || q.s === null ? "" : q.s) })
+        }
+    var c = Number(o.current)
+    out.current = Math.floor(c) === c && c >= 0 && c < out.queue.length ? c : -1
+    return out
+}
+
+// Up Next: the title of the item after the one that plays, "" when that is not known or it is the last
+// (MS/a.java V(): null, and the Up Next card is disabled)
+function upNextTitle(queue, current) {
+    return queue && current >= 0 && current + 1 < queue.length ? queue[current + 1].title : ""
+}
+
+// The overflow's custom actions: a button group of the first three (MS/fl.java A(), MS/hg.java af():
+// min(size, 3))
+var MAX_ACTIONS_SHOWN = 3
+var ACTION_H = 52             // dp, the group's buttons (MS/hg.java ag(): 52 x 52 dp)
+var ACTION_GAP = 8            // dp between them (MS/hg.java af(): spacedBy 8 dp)
+
+// The icon of a custom action: the phone cannot send the player's own (an app resource), so a known name
+// gets the matching symbol; "" shows the name instead
+var ACTION_ICONS = [
+    [/shuffle/, "ios-shuffle"],
+    [/\brepeat|\bloop/, "ios-repeat"],
+    [/thumbs? ?down|dislike/, "ios-thumbs-down"],
+    [/thumbs? ?up|\blike/, "ios-thumbs-up"],
+    [/favou?rite|heart|\blove/, "ms-favorite"],
+    [/speed|\b\d+([.,]\d+)? ?x\b/, "ios-speedometer"],
+    [/rewind|replay|\bback\b|^-\s?\d/, "ios-rewind"],
+    [/forward|\bahead\b|^\+\s?\d/, "ios-fastforward"],
+    [/bookmark/, "ms-bookmark"],
+    [/timer|\bsleep/, "ms-timer"]
+]
+function actionIcon(name) {
+    var n = String(name === undefined || name === null ? "" : name).toLowerCase()
+    for (var i = 0; i < ACTION_ICONS.length; i++)
+        if (ACTION_ICONS[i][0].test(n))
+            return ACTION_ICONS[i][1]
+    return ""
+}
+
+// The player app's name as btsyncd's MPRIS player has it (<an> of the media state); its own name when the
+// phone did not say (asteroid-btsyncd src/mediaservice.cpp setIdentity)
+var DAEMON_IDENTITY = "Asteroid BLE Sync Daemon"
+function playerName(identity) {
+    var s = String(identity || "").trim()
+    return s === DAEMON_IDENTITY ? "" : s
+}
+
+// The overflow and queue lists' padding (MS/grt.java:68-76: 5.2 % of the width at the sides, 7.3 % of the
+// height at the top, 21.88 % at the bottom) and the app header item (MS/grz.java:10-20: 28 % of the width
+// tall, 4.18 % at the sides)
+var LIST_TOP = 0.073
+var LIST_BOTTOM = 0.2188
+var LIST_SIDE = 0.052
+var HEADER_H = 0.28
+var HEADER_SIDE = 0.0418
+
+// A queue item (MS/fl.java p(), r()): padding 14 / 8 dp, title labelMedium (2 lines, 1 with a subtitle),
+// subtitle labelSmall (1 line); the one that plays has the 16 dp equaliser 4 dp after its texts
+var QUEUE_PAD_H = 14
+var QUEUE_PAD_V = 8
+var QUEUE_GAP = 4
+
+// ---- the equaliser of the item that plays (MS/fl.java o(), MS/duh.java:45-56) ----
+// equaliser_animated_icon: three bars in a 240 px viewport drawn at 16 dp, a 2000 ms loop (time_group),
+// the bars' tops keyframed (path data); here in dp: [ms, top]. Bars 1.79 dp wide at x 3.56, 8 and
+// 12.44 dp, standing on y 15.1 dp, round ends.
+var EQ_SIZE = 16
+var EQ_LOOP_MS = 2000
+var EQ_BAR_W = 1.79
+var EQ_BAR_X = [3.56, 8, 12.44]
+var EQ_BOTTOM = 15.1
+var EQ_KEYS = [
+    [[0, 13.27], [200, 5.38], [383, 11.27], [666, 8.84], [900, 6.06], [1383, 11.27], [1633, 8.84], [2000, 13.27]],
+    [[0, 0.94], [350, 12.05], [700, 0.92], [1033, 9.44], [1243, 8.23], [1440, 12.76], [1619, 7.33], [1817, 8.43], [2000, 0.94]],
+    [[0, 3.56], [233, 10.46], [552, 7.31], [866, 12.94], [1117, 6.93], [1434, 11.69], [1717, 10.46], [2000, 3.56]]
+]
+// the segments' interpolator: the path curve 12 of the 22 segments use (c0.24,0.075 0.56,0.862 1,1)
+var EQ_EASE = [0.24, 0.075, 0.56, 0.862]
+// paused_equaliser: three 2 x 1 dp bars on y 12, at x 3, 7 and 11 dp, round ends
+var EQ_PAUSED_X = [3, 7, 11]
+var EQ_PAUSED_Y = 12
+var EQ_PAUSED_W = 2
+var EQ_PAUSED_H = 1
+
+// y of a cubic Bezier easing (0,0) (x1,y1) (x2,y2) (1,1) at x = p
+function bezierEase(c, p) {
+    if (p <= 0) return 0
+    if (p >= 1) return 1
+    var bx = function (t) { return 3 * c[0] * t * (1 - t) * (1 - t) + 3 * c[2] * t * t * (1 - t) + t * t * t }
+    var by = function (t) { return 3 * c[1] * t * (1 - t) * (1 - t) + 3 * c[3] * t * t * (1 - t) + t * t * t }
+    var lo = 0, hi = 1, t = p
+    for (var i = 0; i < 24; i++) {
+        var x = bx(t)
+        if (Math.abs(x - p) < 1e-5) break
+        if (x < p) lo = t; else hi = t
+        t = (lo + hi) / 2
+    }
+    return by(t)
+}
+
+// the three bars' tops (dp) at `ms` into the loop
+function equaliserTops(ms) {
+    var m = ((ms % EQ_LOOP_MS) + EQ_LOOP_MS) % EQ_LOOP_MS
+    var out = []
+    for (var b = 0; b < EQ_KEYS.length; b++) {
+        var k = EQ_KEYS[b]
+        var top = k[0][1]
+        for (var i = 1; i < k.length; i++) {
+            if (m <= k[i][0]) {
+                var f = (m - k[i - 1][0]) / (k[i][0] - k[i - 1][0])
+                top = k[i - 1][1] + (k[i][1] - k[i - 1][1]) * bezierEase(EQ_EASE, f)
+                break
+            }
+        }
+        out.push(top)
+    }
+    return out
+}
