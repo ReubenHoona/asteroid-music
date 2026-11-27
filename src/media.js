@@ -159,6 +159,20 @@ function radii(poly, n) {
     return r
 }
 
+// The radii (RING_SAMPLES of them) of the play button's constant outlines: "scallop" (playing), "wide" and
+// "narrow" (the pills a press morphs toward, 12 dp wider or narrower). Worked out the first time one is
+// asked (about 120 rays each), then kept: at rest and not playing the button needs none of them.
+var _shapes = {}
+function shapeRadii(name) {
+    if (_shapes[name] === undefined) {
+        var d = 2 * SCALLOP_OUTER
+        var poly = name === "scallop" ? scallopPolygon()
+                 : pillPolygon(name === "wide" ? d + EXPAND : d - EXPAND, d)
+        _shapes[name] = radii(poly, RING_SAMPLES)
+    }
+    return _shapes[name]
+}
+
 function circleRadii(r, n) {
     var a = []
     for (var i = 0; i < n; i++) a.push(r)

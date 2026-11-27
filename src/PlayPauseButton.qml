@@ -48,17 +48,15 @@ Item {
     Behavior on glyphT { NumberAnimation { duration: Media.ICON_MORPH_MS * Motion.animationScale; easing.type: Easing.Linear } }
     Behavior on fillScale { NumberAnimation { duration: 250 * Motion.animationScale; easing.type: Easing.BezierSpline; easing.bezierCurve: Motion.easing.standard } }
 
-    readonly property var _scallop: Media.radii(Media.scallopPolygon(), Media.RING_SAMPLES)
     readonly property var _circle: Media.circleRadii(Media.SCALLOP_OUTER, Media.RING_SAMPLES)
-    readonly property var _wide: Media.radii(Media.pillPolygon(2 * Media.SCALLOP_OUTER + Media.EXPAND, 2 * Media.SCALLOP_OUTER), Media.RING_SAMPLES)
-    readonly property var _narrow: Media.radii(Media.pillPolygon(2 * Media.SCALLOP_OUTER - Media.EXPAND, 2 * Media.SCALLOP_OUTER), Media.RING_SAMPLES)
     readonly property real squeezeAmount: Math.max(-1, Math.min(1, squeeze / Media.EXPAND))
-    // the outline now, in dp
+    // the outline now, in dp: the circle at rest (not playing, not pressed); the scallop and the pills come
+    // from Media.shapeRadii, worked out when first wanted
     readonly property var radiiNow: {
-        var base = Media.blend(_circle, _scallop, morph)
+        var base = morph === 0 ? _circle : Media.blend(_circle, Media.shapeRadii("scallop"), morph)
         if (squeezeAmount === 0)
             return base
-        return Media.blend(base, squeezeAmount > 0 ? _wide : _narrow, Math.abs(squeezeAmount))
+        return Media.blend(base, Media.shapeRadii(squeezeAmount > 0 ? "wide" : "narrow"), Math.abs(squeezeAmount))
     }
 
     readonly property real half: width / 2

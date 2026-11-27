@@ -111,6 +111,24 @@ Application {
     onIsPlayingChanged: syncPosition()
     Component.onCompleted: syncPosition()
 
+    // The play button's outlines that the first frame does not show (the scallop of a playing track, the
+    // pills of a press: Media.shapeRadii, about 120 rays each) are worked out after it, one after each
+    // frame the window shows (its frameSwapped), before they are wanted; one wanted sooner is worked out
+    // then.
+    readonly property var laterShapes: ["scallop", "wide", "narrow"]
+    property int shapesMade: 0
+    Connections {
+        target: app.Window.window
+        enabled: app.shapesMade < app.laterShapes.length
+        function onFrameSwapped() { Qt.callLater(app.makeNextShape) }
+    }
+    function makeNextShape() {
+        if (shapesMade >= laterShapes.length)
+            return
+        Media.shapeRadii(laterShapes[shapesMade])
+        shapesMade++
+    }
+
     Timer {
         id: positionTimer
         interval: 1000
