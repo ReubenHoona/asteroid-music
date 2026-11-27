@@ -50,6 +50,56 @@ Application {
 
     onBufferedVolumeChanged: mprisController.volume = bufferedVolume
 
+    // The phone's artwork and its colours (media-controls-11): the picture behind the player (ArtBackground)
+    // and a colour scheme seeded from its dominant colour (MS/gts.java:9-50, a tonal-spot scheme of that
+    // colour); every screen of the app takes it (the player, the queue: MS/fl.java:5631, 6246), as the
+    // badge, the play shape and the pills do. Without a colour: the system's colours (MS/gqe.java:90).
+    // What btsyncd says is taken over at once while the app is in front with the screen on, else when it
+    // comes back: nothing is worked out or redrawn for a screen that is off.
+    property string shownArtPath: ""
+    property string shownArtColor: ""
+    readonly property string artSource: shownArtPath !== "" ? "file://" + shownArtPath : ""
+    /*! The roles are the artwork's (not the system's). */
+    property bool artThemed: false
+
+    function takeArt() {
+        shownArtPath = mediaLink.artPath
+        shownArtColor = mediaLink.artColor
+    }
+
+    function applyArtScheme() {
+        var seed = Media.artSeed(shownArtColor)
+        if (seed !== "") {
+            var g = PaletteGenerator.generate(seed, "", Media.ART_SCHEME_STYLE)
+            if (g && g.primary !== undefined) {
+                Theme._setRoles(g)
+                artThemed = true
+                return
+            }
+        }
+        if (artThemed) {
+            artThemed = false
+            Theme.applyColorTheme(true)
+        }
+    }
+
+    onShownArtColorChanged: applyArtScheme()
+    onInteractiveChanged: if (interactive) takeArt()
+
+    MediaLink {
+        id: mediaLink
+        onArtUpdated: if (app.interactive) app.takeArt()
+    }
+
+    // the system's colour theme changed (Settings): the artwork's colours stay
+    Connections {
+        target: Theme
+        function on_ColorThemeChanged() {
+            if (app.artThemed)
+                Qt.callLater(app.applyArtScheme)
+        }
+    }
+
     // Where the track is (the phone tells asteroid-btsyncd at play, pause and
     // seek): run on here while it plays, refreshed once a second while shown
     property double basePosition: 0
@@ -61,6 +111,9 @@ Application {
     // (media-controls-14); one single shot, no polling
     property bool waitedOut: false
     readonly property alias refreshTimer: positionTimer
+    // for the tests
+    readonly property alias mpris: mprisController
+    readonly property alias link: mediaLink
 
     readonly property var shown: Media.describe({
         linkUp: linkUp,
@@ -162,13 +215,12 @@ Application {
     Component {
         id: playerComponent
         Item {
-            // the phone's artwork stays as it was (media-controls-11 belongs to
-            // the gadgetbridge / btsyncd package)
-            Image {
+            // the phone's artwork (media-controls-11)
+            ArtBackground {
+                objectName: "artBackground"
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
-                opacity: 0.7
-                source: mprisController.metaData.artUrl ? mprisController.metaData.artUrl : ""
+                source: app.artSource
+                animate: app.interactive
             }
 
             PlayerPage {

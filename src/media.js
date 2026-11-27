@@ -316,3 +316,19 @@ function volumeIcon(level) {
 }
 
 function clamp01(v) { return Math.max(0, Math.min(1, v)) }
+
+// ---- the artwork and its colours (media-controls-11) ----
+// MS/gva.java:88-123: the artwork at 60 % opacity; MS/hmv.java:40-44: the radial gradient clear to 65 % of the
+// radius, the scheme's background at 100 %
+var ART_OPACITY = 0.6
+var ART_CLEAR = 0.65
+// The scheme seeded from the artwork's colour (MS/gts.java:9-50, MS/iid.java:16-31: primary chroma 36,
+// secondary 16, tertiary hue + 60 at 24, neutral 6, neutral variant 8, dark): the tonal-spot style of
+// org.asteroid.controls' PaletteGenerator (PaletteGenerator.TonalSpot)
+var ART_SCHEME_STYLE = 1
+
+// btsyncd's colour ("RRGGBB", ARGB without alpha; or "#RRGGBB") as "#RRGGBB", "" for anything else
+function artSeed(c) {
+    var s = String(c === undefined || c === null ? "" : c).trim()
+    return /^#?[0-9a-fA-F]{6}$/.test(s) ? ("#" + s.replace("#", "")).toUpperCase() : ""
+}

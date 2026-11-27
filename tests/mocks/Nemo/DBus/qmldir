@@ -1,0 +1,4 @@
+module Nemo.DBus
+DBusInterface 2.0 DBusInterface.qml
+singleton DBus 2.0 DBus.qml
+singleton DBusMock 2.0 DBusMock.qml

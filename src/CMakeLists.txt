@@ -13,6 +13,8 @@ asteroid_app_qml_module(asteroid-music
 	CrownVolume.qml
 	VolumePage.qml
 	PlayerPage.qml
+	ArtBackground.qml
+	MediaLink.qml
 )
 
 target_link_libraries(
