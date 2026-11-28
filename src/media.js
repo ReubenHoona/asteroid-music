@@ -277,16 +277,23 @@ function groupWidths(base, pressed, e) {
     return w
 }
 
-// ---- state and texts (media-controls-14, -25) ----
+// ---- state and texts (media-controls-14, -25; C-24) ----
 // in: linkUp, hasService, status ("playing" | "paused" | "stopped"),
 // title, artist, waitedOut (the 2 s of loading are over)
-// out: kind "loading" | "nothing" | "media", title, artist, unknown
+// out: kind "loading" | "nothing" | "disconnected" | "media", title, artist, unknown
+// "disconnected": the phone is linked but there is no media session to
+// control (no MPRIS player: asteroid-btsyncd's bridge of the phone's player
+// is gone), stock's session error "Disconnected from media app"
+// (SessionError -100, MS/dac.java:648-650). The phone gone is "nothing", as
+// stock's bridged sessions time out (MS SessionTimeout).
 function describe(m) {
     var title = m.title || "", artist = m.artist || ""
     var live = m.hasService && (m.status === "playing" || m.status === "paused")
     var session = m.hasService && (title !== "" || live)
     if (!(m.linkUp && session) && !m.waitedOut)
         return { kind: "loading", title: "", artist: "", unknown: false }
+    if (m.linkUp && !m.hasService)
+        return { kind: "disconnected", title: "", artist: "", unknown: false }
     if (!m.linkUp || !session)
         return { kind: "nothing", title: "", artist: "", unknown: false }
     if (title.trim() === "")

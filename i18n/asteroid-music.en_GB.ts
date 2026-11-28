@@ -101,5 +101,9 @@
         <source>Paused</source>
         <translation>Paused</translation>
     </message>
+    <message id="id-media-disconnected">
+        <source>Disconnected from media app</source>
+        <translation>Disconnected from media app</translation>
+    </message>
 </context>
 </TS>

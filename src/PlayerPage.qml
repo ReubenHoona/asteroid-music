@@ -21,7 +21,8 @@ import "media.js" as Media
 Item {
     id: root
 
-    /*! "loading", "nothing" (nothing playing, or the phone is gone) or "media" */
+    /*! "loading", "nothing" (nothing playing, or the phone is gone), "disconnected" (the phone is
+        linked but no media session is there: stock's "Disconnected from media app") or "media" */
     property string kind: "media"
     property string title
     property string artist
@@ -63,6 +64,8 @@ Item {
     readonly property string nothingText: qsTrId("id-media-nothing-playing")
     //% "Loading…"
     readonly property string loadingText: qsTrId("id-media-loading")
+    //% "Disconnected from media app"
+    readonly property string disconnectedText: qsTrId("id-media-disconnected")
     //% "Previous"
     readonly property string previousText: qsTrId("id-media-previous")
     //% "Next"
@@ -100,9 +103,11 @@ Item {
         paused: true
     }
 
-    // Nothing playing / Loading…: titleMedium onSurfaceVariant, centred in the
-    // 38 dp display box, 75 % wide
-    Label {
+    // Nothing playing / Loading… / Disconnected from media app: titleMedium
+    // onSurfaceVariant, centred in the 38 dp display box, 75 % wide; a text
+    // longer than the box runs as a marquee (stock's media display text,
+    // MS/fl.java:1479-1566)
+    MarqueeText {
         id: status
         x: (root.width - width) / 2
         y: root.displayTop
@@ -111,11 +116,9 @@ Item {
         visible: !root.isMedia
         role: "titleMedium"
         color: Theme.color.onSurfaceVariant
-        text: root.kind === "loading" ? root.loadingText : root.nothingText
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        elide: Text.ElideRight
-        maximumLineCount: 1
+        text: root.kind === "loading" ? root.loadingText
+            : root.kind === "disconnected" ? root.disconnectedText : root.nothingText
+        paused: !root.active
     }
 
     // ---- middle box: the button group ----
